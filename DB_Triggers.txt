@@ -1,0 +1,25 @@
+-- TRIGGER 1
+
+CREATE TRIGGER remove_product_from_carts
+AFTER DELETE ON {Product}
+FOR EACH ROW
+BEGIN
+    DELETE FROM {CartItem}
+    WHERE {CartItem.product_id} = OLD.{Product.id};
+END;
+
+
+-- TRIGGER 2
+
+CREATE TRIGGER insert_into_order_item_and_delete_cart_items
+AFTER INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    INSERT INTO OrderItem (user_id, order_id, product_id, quantity)
+    SELECT CartItem.user_id, NEW.id, CartItem.product_id, CartItem.quantity
+    FROM CartItem
+    WHERE CartItem.user_id = NEW.user_id;
+    
+    DELETE FROM CartItem WHERE user_id = NEW.user_id;
+END;
+
